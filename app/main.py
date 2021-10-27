@@ -170,7 +170,6 @@ def serve(index) -> dict:
             return failure_response("{}:{}".format(host, port), 404)
 
         TOTAL_RESPONSE_TIME = time.perf_counter() - start
-
         # doesn't matter what is returned
         return {'urls': list(urls), 'cost': cost}
 
