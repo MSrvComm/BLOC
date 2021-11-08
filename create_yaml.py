@@ -46,21 +46,73 @@ def writeConfig(image):
                       'kind': 'Deployment',
                       'metadata': {'name': name,
                                    'labels': {'app': name},
-                                #    'annotations': {"sidecar.jaegertracing.io/inject": "true"}
+                                   'annotations': {"sidecar.jaegertracing.io/inject": "true"}
                                    },
                       'spec': {'replicas': replicas,
                                'selector': {'matchLabels': {'app': name}},
                                'template': {'metadata': {'labels': {'app': name}},
                                             'spec': {'containers':
-                                                     [{'name': name,
-                                                       'image': image,
-                                                       'ports': [
-                                                           {'containerPort': 5000}
-                                                       ],
-                                                       'resources': {'limits': {'memory': '100Mi', 'cpu': '1500m'},
-                                                                     'requests': {'memory': '50Mi', 'cpu': '1000m'}
-                                                                     }
-                                                       }]}
+                                                     [
+                                                         {'name': name,
+                                                          'image': image,
+                                                          'ports': [
+                                                              {'containerPort': 5000}
+                                                          ],
+                                                             'resources': {'limits': {'memory': '100Mi', 'cpu': '1500m'},
+                                                                           'requests': {'memory': '50Mi', 'cpu': '1000m'}
+                                                                           }
+                                                          },
+                                                         {'name': 'micoproxy',
+                                                                  'image': 'ratnadeepb/micoproxy:latest',
+                                                                  'ports': [
+                                                                      {'containerPort': 62081},
+                                                                      {'containerPort': 62082}
+                                                                  ],
+                                                          'securityContext': {
+                                                                      'runAsUser': 2102,
+                                                                      'allowPrivilegeEscalation': "y",
+                                                                      'capabilities': {
+                                                                          'add': [
+                                                                              'NET_ADMIN',
+                                                                              'NET_RAW'
+                                                                          ],
+                                                                          'drop': [
+                                                                              'ALL'
+                                                                          ]
+                                                                      },
+                                                                      'privileged': "y"
+                                                                  }
+                                                          }
+                                                     ],
+                                                     'initContainers': [{
+                                                         'name': 'mico-init1',
+                                                         'command': ['/usr/local/micoinit'],
+                                                         'image': 'ratnadeepb/micoinit:latest',
+                                                         'securityContext': {
+                                                             'privileged': "y"
+                                                         }
+                                                     },
+                                                         {
+                                                         'name': 'mico-init2',
+                                                         'command': ['iptables'],
+                                                         'args': ['-t', 'nat', '-L'],
+                                                         'image': 'ratnadeepb/micoinit:latest',
+                                                         'securityContext': {
+                                                                  'allowPrivilegeEscalation': "y",
+                                                                  'capabilities': {
+                                                                      'add': [
+                                                                          'NET_ADMIN',
+                                                                          'NET_RAW'
+                                                                      ],
+                                                                      'drop': [
+                                                                          'ALL'
+                                                                      ]
+                                                                  },
+                                                             'privileged': "y"
+                                                         }
+                                                     },
+                                                     ]
+                                                     }
                                             },
                                }
                       }
