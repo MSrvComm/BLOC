@@ -1,45 +1,68 @@
 #!/usr/bin/env python3
 import networkx as nx
+from networkx.classes.function import neighbors
 import yaml
 import sys
-from numpy.random import randint
+import numpy as np
+from numpy.random import randint as nprandint
+from random import randint
 
-if len(sys.argv) < 3:
+if len(sys.argv) < 4:
     sys.stderr.write("not enough arguments\n")
     sys.stderr.write(
-        f"Usage: {__file__} <node_count|int> <edge_count|int> <max_cost|int>\n")
+        f"Usage: {__file__} <node_count|int> <max_cost|int> <graph_type|string>\n")
+    sys.stderr.write(
+        "Acceptable graph types are: binomial, power_law or and small_world\n")
     sys.exit(1)
 
-_node_count = int(sys.argv[1])
-_edge_count = int(sys.argv[2])
-max_cost = int(sys.argv[3])
+node_count = int(sys.argv[1])
+max_cost = int(sys.argv[2])
+graph_type = sys.argv[3]
+
+n = int(np.ceil(node_count * 0.5))
+neighbors = 1 if n == 0 else n
+# neighbors = nprandint(1, node_count)
+
+print(neighbors)
+
+if graph_type == "binomial":
+    edge_count = node_count // 4 if node_count > 4 else node_count // 2
+    G = nx.binomial_graph(node_count, neighbors)
+else:
+    if graph_type == "power_law":
+        G = nx.extended_barabasi_albert_graph(node_count, neighbors, 0, 0)
+        # G = nx.barabasi_albert_graph(node_count, neighbors)
+    else:
+        G = nx.watts_strogatz_graph(node_count, neighbors, 0)
+        # G = nx.connected_watts_strogatz_graph(node_count, neighbors, 0.2)
+
 # values to be collected from users
-node_count = 3
-edge_count = 2
+# node_count = 3
+# edge_count = 2
 # ultimately, we would want every service to start a single pod
-_replicas = [1] * _node_count
-print(_replicas)  # debug
+replicas = [3] * node_count
 
-replicas = [2, 4, 2]
+# replicas = [2, 4, 2]
 
-costs = [2, 2, 4]
+# costs = [2, 2, 4]
 # create a list of random costs
-_costs = randint(max_cost + 1, size=_node_count)
-print(_costs)  # debug
+costs = list(nprandint(max_cost + 1, size=node_count))
+# costs = [3] * node_count
+# costs = [randint(1, max_cost + 1)] * node_count
 
-bads = [0, 0, 1]
+# bads = [0, 0, 1]
 # randomly allow some services to have bad pods
-_bads = randint(2, size=_node_count)
-print(_bads)  # debug
+bads = nprandint(2, size=node_count)
+# bads = [0] * node_count
 
-fname = "test-config.yaml"
+fname = "test.yaml"
 # =================================
 
 map = {}
 for i in range(node_count):
     map[i] = 'testapp-svc-%s' % i
 
-G = nx.binomial_graph(node_count, edge_count)
+# G = nx.binomial_graph(node_count, edge_count)
 
 H = nx.relabel_nodes(G, map)
 
@@ -50,8 +73,8 @@ for item in map.items():
     idx = item[0]
     config_tmpl['index'] = idx
     config_tmpl['replicas'] = replicas[idx]
-    config_tmpl['cost'] = costs[idx]
-    config_tmpl['bads'] = bads[idx]
+    config_tmpl['cost'] = int(costs[idx])
+    config_tmpl['bads'] = int(bads[idx])
     svc = []
     # too expensive???
     for edge in H.edges:

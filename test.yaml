@@ -1,0 +1,45 @@
+- bads: 1
+  cost: 4
+  index: 0
+  replicas: 3
+  svc:
+  - testapp-svc-1:5000/svc/1
+  - testapp-svc-2:5000/svc/2
+  - testapp-svc-3:5000/svc/3
+  - testapp-svc-4:5000/svc/4
+  - testapp-svc-5:5000/svc/5
+- bads: 0
+  cost: 3
+  index: 1
+  replicas: 3
+  svc:
+  - testapp-svc-2:5000/svc/2
+  - testapp-svc-3:5000/svc/3
+  - testapp-svc-4:5000/svc/4
+  - testapp-svc-5:5000/svc/5
+- bads: 1
+  cost: 2
+  index: 2
+  replicas: 3
+  svc:
+  - testapp-svc-3:5000/svc/3
+  - testapp-svc-4:5000/svc/4
+  - testapp-svc-5:5000/svc/5
+- bads: 0
+  cost: 3
+  index: 3
+  replicas: 3
+  svc:
+  - testapp-svc-4:5000/svc/4
+  - testapp-svc-5:5000/svc/5
+- bads: 1
+  cost: 2
+  index: 4
+  replicas: 3
+  svc:
+  - testapp-svc-5:5000/svc/5
+- bads: 1
+  cost: 0
+  index: 5
+  replicas: 3
+  svc: []
