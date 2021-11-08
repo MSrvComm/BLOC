@@ -107,7 +107,7 @@ def mem_usage():
 
 @app.route("/health_check", methods=["GET"])
 def health_check():
-    return "OK\n"
+    return ""
 
 
 @app.route("/statistics", methods=['GET'])
